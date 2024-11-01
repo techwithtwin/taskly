@@ -1,9 +1,14 @@
 import { Feather, FontAwesome5, AntDesign } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { theme } from "../theme";
 
 function Layout() {
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: theme.colorCerulean,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -17,6 +22,7 @@ function Layout() {
         name="counter"
         options={{
           title: "Counter",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <AntDesign name="clockcircleo" size={size} color={color} />
           ),
