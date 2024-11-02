@@ -46,6 +46,21 @@ export default function App() {
     setShoppingItems(newItems);
   };
 
+  const handleUndo = (name: string) => {
+    let newItems = shoppingItems.map((item) => {
+      if (item.name === name) {
+        return {
+          ...item,
+          isCompleted: false,
+        };
+      }
+
+      return item;
+    });
+
+    setShoppingItems(newItems);
+  };
+
   const onSubmit = () => {
     if (!value) return;
     let existingItem = shoppingItems.find((item) => item.name === value);
@@ -84,6 +99,7 @@ export default function App() {
           key={item.key}
           name={item.name}
           isCompleted={item.isCompleted}
+          handleUndo={handleUndo}
           handleComplete={handleComplete}
         />
       ))}

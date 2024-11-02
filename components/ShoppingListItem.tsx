@@ -2,10 +2,12 @@ import React from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "../theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface Props {
   name: string;
   handleComplete: (name: string) => void;
+  handleUndo: (name: string) => void;
   isCompleted?: boolean;
 }
 
@@ -13,6 +15,7 @@ export default function ShoppingListItem({
   name,
   handleComplete,
   isCompleted,
+  handleUndo,
 }: Props) {
   const handleDelete = () => {
     Alert.alert("Delete", `Are you sure you want to delete ${name}?`, [
@@ -26,6 +29,7 @@ export default function ShoppingListItem({
       },
     ]);
   };
+
   return (
     <View
       style={[styles.innerBox, isCompleted ? styles.completedBox : undefined]}
@@ -35,13 +39,16 @@ export default function ShoppingListItem({
       >
         {name}
       </Text>
-      <TouchableOpacity onPress={handleDelete} disabled={isCompleted}>
-        <AntDesign
-          name="closecircle"
-          size={24}
-          color={isCompleted ? theme.colorGray : theme.colorRed}
-        />
-      </TouchableOpacity>
+
+      {isCompleted ? (
+        <TouchableOpacity onPress={() => handleUndo(name)}>
+          <MaterialCommunityIcons name="undo-variant" size={24} color="green" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={handleDelete}>
+          <AntDesign name="closecircle" size={24} color={theme.colorRed} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
