@@ -5,10 +5,15 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 
 interface Props {
   name: string;
+  handleComplete: (name: string) => void;
   isCompleted?: boolean;
 }
 
-export default function ShoppingListItem({ name, isCompleted }: Props) {
+export default function ShoppingListItem({
+  name,
+  handleComplete,
+  isCompleted,
+}: Props) {
   const handleDelete = () => {
     Alert.alert("Delete", `Are you sure you want to delete ${name}?`, [
       {
@@ -17,7 +22,7 @@ export default function ShoppingListItem({ name, isCompleted }: Props) {
       },
       {
         text: "Yes",
-        onPress: () => console.log("Yes"),
+        onPress: () => handleComplete(name),
       },
     ]);
   };
@@ -53,7 +58,7 @@ const styles = StyleSheet.create({
   },
   completedBox: {
     backgroundColor: theme.colorLightGray,
-    borderBottomColor: theme.colorLightGray,
+    borderBottomColor: "rgb(122, 122, 122)",
   },
   text: {
     fontSize: 18,
