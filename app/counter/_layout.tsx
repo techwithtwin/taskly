@@ -1,10 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Link, Stack, useRouter } from "expo-router";
+import { Link, Stack } from "expo-router";
+import { Pressable } from "react-native";
 import { theme } from "../../theme";
-import { Pressable, Text } from "react-native";
 
 export default function Layout() {
-  const router = useRouter();
   return (
     <Stack>
       <Stack.Screen
