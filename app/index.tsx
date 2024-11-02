@@ -13,39 +13,23 @@ import { theme } from "../theme";
 type ShoppingItem = {
   name: string;
   key: string;
-  isCompleted: boolean;
+  completedAtTimestamp?: number;
+  lastUpdatedAtTimestamp?: number;
 };
 
-const initialItems: ShoppingItem[] = [
-  {
-    name: "Milk",
-    key: "milk",
-    isCompleted: false,
-  },
-  {
-    name: "Coffee",
-    key: "coffee",
-    isCompleted: false,
-  },
-  {
-    name: "Tea",
-    key: "tea",
-    isCompleted: false,
-  },
-];
-
 export default function App() {
-  const [shoppingItems, setShoppingItems] =
-    useState<ShoppingItem[]>(initialItems);
+  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
 
   const [value, setValue] = useState<string>("");
 
-  const handleComplete = (name: string) => {
+  const handleToggleComplete = (key: string) => {
     let newItems = shoppingItems.map((item) => {
-      if (item.name === name)
+      if (item.key === key)
         return {
           ...item,
-          isCompleted: true,
+          completedAtTimestamp: item.completedAtTimestamp
+            ? undefined
+            : Date.now(),
         };
       return item;
     });
@@ -53,18 +37,8 @@ export default function App() {
     setShoppingItems(newItems);
   };
 
-  const handleUndo = (name: string) => {
-    let newItems = shoppingItems.map((item) => {
-      if (item.name === name) {
-        return {
-          ...item,
-          isCompleted: false,
-        };
-      }
-
-      return item;
-    });
-
+  const handleDelete = (name: string) => {
+    let newItems = shoppingItems.filter((item) => item.name !== name);
     setShoppingItems(newItems);
   };
 
@@ -79,18 +53,35 @@ export default function App() {
     }
 
     setShoppingItems([
-      { name: value, isCompleted: false, key: new Date().toISOString() },
+      {
+        name: value,
+        key: new Date().toISOString(),
+        completedAtTimestamp: Date.now(),
+      },
       ...shoppingItems,
     ]);
 
     setValue("");
   };
 
+  const sortItems = () => {
+    return shoppingItems.sort((a, b) => {
+      if (a.completedAtTimestamp && b.completedAtTimestamp)
+        return b.completedAtTimestamp - a.completedAtTimestamp;
+
+      if (!a.completedAtTimestamp && !b.completedAtTimestamp) {
+        return 0;
+      }
+      if (!a.completedAtTimestamp) return -1;
+      else return +1;
+    });
+  };
+
   return (
     <FlatList
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      data={shoppingItems}
+      data={sortItems()}
       stickyHeaderIndices={[0]}
       ListEmptyComponent={() => (
         <View
@@ -116,9 +107,9 @@ export default function App() {
       renderItem={({ item }) => (
         <ShoppingListItem
           name={item.name}
-          isCompleted={item.isCompleted}
-          handleUndo={() => handleUndo(item.name)}
-          handleComplete={() => handleComplete(item.name)}
+          isCompleted={Boolean(item.completedAtTimestamp)}
+          handleDelete={() => handleDelete(item.name)}
+          onToggleComplete={() => handleToggleComplete(item.key)}
         />
       )}
     />
