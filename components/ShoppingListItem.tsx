@@ -6,8 +6,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface Props {
   name: string;
-  handleComplete: (name: string) => void;
-  handleUndo: (name: string) => void;
+  handleComplete: () => void;
+  handleUndo: () => void;
   isCompleted?: boolean;
 }
 
@@ -25,7 +25,7 @@ export default function ShoppingListItem({
       },
       {
         text: "Yes",
-        onPress: () => handleComplete(name),
+        onPress: () => handleComplete(),
       },
     ]);
   };
@@ -41,7 +41,7 @@ export default function ShoppingListItem({
       </Text>
 
       {isCompleted ? (
-        <TouchableOpacity onPress={() => handleUndo(name)}>
+        <TouchableOpacity onPress={() => handleUndo()}>
           <MaterialCommunityIcons name="undo-variant" size={24} color="green" />
         </TouchableOpacity>
       ) : (

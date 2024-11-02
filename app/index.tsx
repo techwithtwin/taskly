@@ -117,8 +117,8 @@ export default function App() {
         <ShoppingListItem
           name={item.name}
           isCompleted={item.isCompleted}
-          handleUndo={handleUndo}
-          handleComplete={handleComplete}
+          handleUndo={() => handleUndo(item.name)}
+          handleComplete={() => handleComplete(item.name)}
         />
       )}
     />
