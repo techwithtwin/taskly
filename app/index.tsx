@@ -1,7 +1,14 @@
-import { StyleSheet, TextInput, ToastAndroid, View } from "react-native";
+import { useState } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  ToastAndroid,
+  View,
+} from "react-native";
 import ShoppingListItem from "../components/ShoppingListItem";
 import { theme } from "../theme";
-import { useState } from "react";
 
 type ShoppingItem = {
   name: string;
@@ -79,31 +86,42 @@ export default function App() {
     setValue("");
   };
 
-  function sortItems(a: ShoppingItem, b: ShoppingItem) {
-    const getDigit = (d: boolean) => (d ? 1 : 0);
-
-    return getDigit(a.isCompleted) - getDigit(b.isCompleted);
-  }
-
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Add item"
-        style={styles.input}
-        value={value}
-        onChangeText={(text) => setValue(text)}
-        onSubmitEditing={onSubmit}
-      />
-      {shoppingItems.sort(sortItems).map((item) => (
+    <FlatList
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      data={shoppingItems}
+      stickyHeaderIndices={[0]}
+      ListEmptyComponent={() => (
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginVertical: 8,
+          }}
+        >
+          <Text>Your Shopping list is Empty</Text>
+        </View>
+      )}
+      ListHeaderComponent={
+        <TextInput
+          placeholder="Add item"
+          style={styles.input}
+          value={value}
+          onChangeText={setValue}
+          onSubmitEditing={onSubmit}
+          returnKeyType="done"
+        />
+      }
+      renderItem={({ item }) => (
         <ShoppingListItem
-          key={item.key}
           name={item.name}
           isCompleted={item.isCompleted}
           handleUndo={handleUndo}
           handleComplete={handleComplete}
         />
-      ))}
-    </View>
+      )}
+    />
   );
 }
 
@@ -111,12 +129,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colorWhite,
+    paddingTop: 12,
+  },
+  contentContainer: {
+    paddingBottom: 24,
   },
   input: {
     padding: 8,
     margin: 10,
     borderWidth: 1,
     borderRadius: 5,
-    borderColor: theme.colorCerulean,
+    borderColor: theme.colorRed,
+    backgroundColor: theme.colorWhite,
   },
 });
