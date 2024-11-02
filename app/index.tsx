@@ -30,6 +30,7 @@ export default function App() {
           completedAtTimestamp: item.completedAtTimestamp
             ? undefined
             : Date.now(),
+          lastUpdateAtTimestamp:Date.now()
         };
       return item;
     });
@@ -66,7 +67,7 @@ export default function App() {
 
   const sortItems = () => {
     return shoppingItems.sort((a, b) => {
-      if (a.completedAtTimestamp && b.completedAtTimestamp)
+      if (a.completedAtTimestamp &&        b.completedAtTimestamp)
         return b.completedAtTimestamp - a.completedAtTimestamp;
 
       if (!a.completedAtTimestamp && !b.completedAtTimestamp) {
