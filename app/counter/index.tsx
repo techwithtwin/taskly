@@ -1,7 +1,11 @@
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { registerForPushNotificationsAsync } from "../../utils/registerForPushNotificationsAsync";
 
 export default function CounterScreen() {
-  const handleRequestPermission = () => {};
+  const handleRequestPermission = async () => {
+    const res = await registerForPushNotificationsAsync();
+    console.log(res);
+  };
   return (
     <View style={styles.container}>
       <TouchableOpacity
