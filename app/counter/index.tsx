@@ -1,13 +1,29 @@
 import { Duration, intervalToDuration, isBefore } from "date-fns";
 import * as Notifications from "expo-notifications";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { registerForPushNotificationsAsync } from "../../utils/registerForPushNotificationsAsync";
 import { TimeSegment } from "../../components/TimeSegment";
 import { theme } from "../../theme";
+import { getFromStorage, saveToStorage } from "../../utils/storage";
 
 // 10 seconds from now
-const timestamp = Date.now() + 10 * 1000;
+const frequency = 60 * 60 * 1000;
+
+// storage key
+export const COUNT_DOWN_KEY = "taskly-countdown";
+
+export type persistedCountdownState = {
+  currentNotificationId: string | undefined;
+  completedAtTimestamps: number[];
+};
 
 type CountdownStatus = {
   isOverdue: boolean;
@@ -15,13 +31,32 @@ type CountdownStatus = {
 };
 
 export default function CounterScreen() {
+  const [countdownState, setCountdownState] =
+    useState<persistedCountdownState>();
   const [status, setStatus] = useState<CountdownStatus>({
     isOverdue: false,
     distance: {},
   });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const lastCompletedTimestamp = countdownState?.completedAtTimestamps[0];
+
+  useEffect(() => {
+    (async () => {
+      const value = await getFromStorage(COUNT_DOWN_KEY);
+      setCountdownState(value);
+    })();
+  }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
+      const timestamp = lastCompletedTimestamp
+        ? lastCompletedTimestamp + frequency
+        : Date.now();
+
+      if (lastCompletedTimestamp) {
+        setIsLoading(false);
+      }
       const isOverdue = isBefore(timestamp, Date.now());
       const distance = intervalToDuration(
         isOverdue
@@ -40,17 +75,18 @@ export default function CounterScreen() {
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [lastCompletedTimestamp]);
 
-  const handleRequestPermission = async () => {
+  const scheduleNotification = async () => {
+    let pushNotificationId;
     const res = await registerForPushNotificationsAsync();
 
     if (res === "granted") {
-      await Notifications.scheduleNotificationAsync({
+      pushNotificationId = await Notifications.scheduleNotificationAsync({
         content: {
-          title: "I'm a notification from your app",
+          title: "The thing is due!",
         },
-        trigger: { seconds: 5 },
+        trigger: { seconds: frequency / 1000 },
       });
     } else {
       Alert.alert(
@@ -58,7 +94,30 @@ export default function CounterScreen() {
         "Enable the notification persmission for the Expo Go in settings"
       );
     }
+    if (countdownState?.currentNotificationId) {
+      await Notifications.cancelScheduledNotificationAsync(
+        countdownState?.currentNotificationId
+      );
+    }
+
+    const newCountdownState: persistedCountdownState = {
+      currentNotificationId: pushNotificationId,
+      completedAtTimestamps: countdownState
+        ? [Date.now(), ...countdownState.completedAtTimestamps]
+        : [Date.now()],
+    };
+
+    setCountdownState(newCountdownState);
+
+    await saveToStorage(COUNT_DOWN_KEY, newCountdownState);
   };
+
+  if (isLoading)
+    return (
+      <View style={styles.activityIndicator}>
+        <ActivityIndicator />
+      </View>
+    );
   return (
     <View
       style={[
@@ -110,7 +169,7 @@ export default function CounterScreen() {
       <TouchableOpacity
         style={styles.button}
         activeOpacity={0.8}
-        onPress={handleRequestPermission}
+        onPress={scheduleNotification}
       >
         <Text style={styles.buttonText}>I've Done the Thing</Text>
       </TouchableOpacity>
@@ -142,6 +201,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "black",
+    marginTop: 20,
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -151,5 +211,10 @@ const styles = StyleSheet.create({
     color: "white",
     textTransform: "uppercase",
     fontWeight: "semibold",
+  },
+  activityIndicator: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
