@@ -27,7 +27,7 @@ export default function CounterScreen() {
         activeOpacity={0.8}
         onPress={handleRequestPermission}
       >
-        <Text style={styles.buttonText}>Schedule Notification</Text>
+        <Text style={styles.buttonText}>Get Images</Text>
       </TouchableOpacity>
     </View>
   );
