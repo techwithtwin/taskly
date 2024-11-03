@@ -18,6 +18,7 @@ export default function IdeaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: "center",
   },
   button: {
     backgroundColor: "black",
