@@ -4,3 +4,5 @@
 2. [ React Native Reanimated ](https://docs.swmansion.com/react-native-reanimated/)
 
 # Haptics
+
+# Push notifications
