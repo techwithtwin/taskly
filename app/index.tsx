@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
+  LayoutAnimation,
   StyleSheet,
   Text,
   TextInput,
@@ -9,18 +10,31 @@ import {
 } from "react-native";
 import ShoppingListItem from "../components/ShoppingListItem";
 import { theme } from "../theme";
+import { getFromStorage, saveToStorage } from "../utils/storage";
+
+const STORAGE_KEY = "shopping-list";
 
 type ShoppingItem = {
   name: string;
   key: string;
   completedAtTimestamp?: number;
-  lastUpdatedAtTimestamp?: number;
+  lastUpdatedAtTimestamp: number;
 };
 
 export default function App() {
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
 
   const [value, setValue] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      const data = await getFromStorage(STORAGE_KEY);
+      if (data) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setShoppingItems(data);
+      }
+    })();
+  }, []);
 
   const handleToggleComplete = (key: string) => {
     let newItems = shoppingItems.map((item) => {
@@ -30,16 +44,19 @@ export default function App() {
           completedAtTimestamp: item.completedAtTimestamp
             ? undefined
             : Date.now(),
-          lastUpdateAtTimestamp:Date.now()
+          lastUpdateAtTimestamp: Date.now(),
         };
       return item;
     });
-
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShoppingItems(newItems);
+    saveToStorage(STORAGE_KEY, newItems);
   };
 
   const handleDelete = (name: string) => {
     let newItems = shoppingItems.filter((item) => item.name !== name);
+    saveToStorage(STORAGE_KEY, newItems);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShoppingItems(newItems);
   };
 
@@ -53,28 +70,35 @@ export default function App() {
       return;
     }
 
-    setShoppingItems([
+    let newItems = [
       {
         name: value,
         key: new Date().toISOString(),
-        completedAtTimestamp: Date.now(),
+        lastUpdatedAtTimestamp: Date.now(),
       },
       ...shoppingItems,
-    ]);
+    ];
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShoppingItems(newItems);
+    saveToStorage(STORAGE_KEY, newItems);
 
     setValue("");
   };
 
   const sortItems = () => {
     return shoppingItems.sort((a, b) => {
-      if (a.completedAtTimestamp &&        b.completedAtTimestamp)
+      if (a.completedAtTimestamp && b.completedAtTimestamp)
         return b.completedAtTimestamp - a.completedAtTimestamp;
 
+      if (a.completedAtTimestamp && !b.completedAtTimestamp) return 1;
+
+      if (!a.completedAtTimestamp && b.completedAtTimestamp) return -1;
+
       if (!a.completedAtTimestamp && !b.completedAtTimestamp) {
-        return 0;
+        return b.lastUpdatedAtTimestamp - a.lastUpdatedAtTimestamp;
       }
-      if (!a.completedAtTimestamp) return -1;
-      else return +1;
+
+      return 0;
     });
   };
 
